@@ -75,6 +75,7 @@ class RawAxis:
         self.name = name
         self._value = 0
         self.when_moved = None
+        self.when_released = None
 
     def __repr__(self):
         return "<xbox360controller.{cls} ({name})>".format(
@@ -96,6 +97,7 @@ class Axis:
         self._value_x = 0
         self._value_y = 0
         self.when_moved = None
+        self.when_released = None
 
     def __repr__(self):
         return "<xbox360controller.{cls} ({name})>".format(
@@ -187,39 +189,42 @@ class Xbox360Controller:
             self.axis_l = Axis("axis_l")
             self.axis_r = Axis("axis_r")
             self.hat = Axis("hat")
-            self.trigger_l = RawAxis("trigger_l")
-            self.trigger_r = RawAxis("trigger_r")
+            self.stick_l = RawAxis("stick_l")
+            self.stick_r = RawAxis("stick_r")
             self.axes = [
                 self.axis_l,
                 self.axis_r,
                 self.hat,
-                self.trigger_l,
-                self.trigger_r,
+                self.stick_l,
+                self.stick_r,
             ]
 
             self.button_a = Button("button_a")
             self.button_b = Button("button_b")
             self.button_x = Button("button_x")
             self.button_y = Button("button_y")
-            self.button_trigger_l = Button("button_trigger_l")
-            self.button_trigger_r = Button("button_trigger_r")
-            self.button_select = Button("button_select")
-            self.button_start = Button("button_start")
-            self.button_mode = Button("button_mode")
-            self.button_thumb_l = Button("button_thumb_l")
-            self.button_thumb_r = Button("button_thumb_r")
+            self.button_stick_l = Button("button_stick_l")
+            self.button_stick_r = Button("button_stick_r")
+            self.button_view = Button("button_view")
+            self.button_menu = Button("button_menu")
+            self.button_xbox = Button("button_xbox")
+            self.button_bumper_l = Button("button_bumper_l")
+            self.button_bumper_r = Button("button_bumper_r")
+            self.button_none = Button("button_none")
             self.buttons = [
                 self.button_a,
                 self.button_b,
+                self.button_none,
                 self.button_x,
                 self.button_y,
-                self.button_trigger_l,
-                self.button_trigger_r,
-                self.button_select,
-                self.button_start,
-                self.button_mode,
-                self.button_thumb_l,
-                self.button_thumb_r,
+                self.button_none,
+                self.button_bumper_l,
+                self.button_bumper_r,
+                self.button_stick_r,
+                self.button_stick_l,
+                self.button_view,
+                self.button_menu,
+                self.button_xbox,
             ]
 
         self._event_thread_stopped = Event()
@@ -301,10 +306,15 @@ class Xbox360Controller:
             and callable(axis.when_moved)
         ):
             axis.when_moved(axis)
+        
+        if (
+            axis.when_released is not None and abs(val) == 0
+            and callable(axis.when_released)
+        ):
+            axis.when_released(axis)
 
     def process_event(self, event):
         if event.type == JS_EVENT_BUTTON:
-
             if event.number >= 11 and event.number <= 14:
                 if event.number == 11:
                     self.hat._value_x = -int(event.value)
@@ -361,13 +371,13 @@ class Xbox360Controller:
                 if num == 1:
                     self.axis_l._value_y = val
                 if num == 2:
-                    self.trigger_l._value = (val + 1) / 2
-                if num == 3:
                     self.axis_r._value_x = val
-                if num == 4:
+                if num == 3:
                     self.axis_r._value_y = val
+                if num == 4:
+                    self.stick_r._value = (val + 1) / 2
                 if num == 5:
-                    self.trigger_r._value = (val + 1) / 2
+                    self.stick_l._value = (val + 1) / 2
                 if num == 6:
                     self.hat._value_x = int(val)
                 if num == 7:
@@ -376,15 +386,16 @@ class Xbox360Controller:
                 axis = [
                     self.axis_l,
                     self.axis_l,
-                    self.trigger_l,
                     self.axis_r,
                     self.axis_r,
-                    self.trigger_r,
+                    self.stick_r,
+                    self.stick_l,
                     self.hat,
                     self.hat,
                 ][num]
 
             self.axis_callback(axis, val)
+
 
     @property
     def driver_version(self):

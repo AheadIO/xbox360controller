@@ -47,6 +47,9 @@ Of course you don't need `sudo` when working from a root shell.
 import signal
 from xbox360controller import Xbox360Controller
 
+with Xbox360Controller() as controller:
+    controller.info()
+
 
 def on_button_pressed(button):
     print('Button {0} was pressed'.format(button.name))
@@ -57,17 +60,65 @@ def on_button_released(button):
 
 
 def on_axis_moved(axis):
-    print('Axis {0} moved to {1} {2}'.format(axis.name, axis.x, axis.y))
+    if hasattr(axis,'x'):
+        print('Axis {0} moved to {1} {2}'.format(axis.name, axis.x, axis.y))
+    else:
+        print('Axis {0} moved to {1}'.format(axis.name, axis.value))
+
+
+def on_axis_released(axis):
+    if hasattr(axis,'x'):
+        print('Axis {0} released to {1} {2}'.format(axis.name, axis.x, axis.y))
+    else:
+        print('Axis {0} released to {1}'.format(axis.name, axis.value))
 
 try:
-    with Xbox360Controller(0, axis_threshold=0.2) as controller:
-        # Button A events
+    with Xbox360Controller(0, axis_threshold=0.2, raw_mode=False, event_timeout=0.2) as controller:
+        # Buttons Events
         controller.button_a.when_pressed = on_button_pressed
         controller.button_a.when_released = on_button_released
+        
+        controller.button_b.when_pressed = on_button_pressed
+        controller.button_b.when_released = on_button_released
+        
+        controller.button_x.when_pressed = on_button_pressed
+        controller.button_x.when_released = on_button_released
+
+        controller.button_y.when_pressed = on_button_pressed
+        controller.button_y.when_released = on_button_released
+
+        controller.button_bumper_l.when_pressed = on_button_pressed
+        controller.button_bumper_l.when_released = on_button_released
+
+        controller.button_bumper_r.when_pressed = on_button_pressed
+        controller.button_bumper_r.when_released = on_button_released
+                
+        controller.button_xbox.when_pressed = on_button_pressed
+        controller.button_xbox.when_pressed = on_button_released
+
+        controller.button_menu.when_pressed = on_button_pressed
+        controller.button_menu.when_released = on_button_released
+
+        controller.button_view.when_released = on_button_pressed
+        controller.button_view.when_released = on_button_released
 
         # Left and right axis move event
         controller.axis_l.when_moved = on_axis_moved
+        controller.axis_l.when_released = on_axis_released
+
         controller.axis_r.when_moved = on_axis_moved
+        controller.axis_r.when_released = on_axis_released
+        
+        # Stick move event
+        controller.stick_l.when_moved = on_axis_moved
+        controller.stick_l.when_released = on_axis_released
+
+        controller.stick_r.when_moved = on_axis_moved
+        controller.stick_r.when_released = on_axis_released
+
+        # Pad move event
+        controller.hat.when_moved = on_axis_moved
+        controller.hat.when_released = on_axis_released
 
         signal.pause()
 except KeyboardInterrupt:
