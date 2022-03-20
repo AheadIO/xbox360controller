@@ -94,12 +94,12 @@ try:
         controller.button_bumper_r.when_released = on_button_released
                 
         controller.button_xbox.when_pressed = on_button_pressed
-        controller.button_xbox.when_pressed = on_button_released
+        controller.button_xbox.when_released = on_button_released
 
         controller.button_menu.when_pressed = on_button_pressed
         controller.button_menu.when_released = on_button_released
 
-        controller.button_view.when_released = on_button_pressed
+        controller.button_view.when_pressed = on_button_pressed
         controller.button_view.when_released = on_button_released
 
         # Left and right axis move event
